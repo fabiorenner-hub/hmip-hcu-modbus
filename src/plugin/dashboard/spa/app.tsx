@@ -1,7 +1,8 @@
 import { signal, effect } from '@preact/signals';
 import type { JSX } from 'preact';
 import { lang, t, tServer } from './i18n.js';
-import { snapshot, streamOnline, config, catalog, api, startStream } from './store.js';
+import { snapshot, streamOnline, config, catalog, api, startStream, updateAvailable, latestVersion, checkForUpdate } from './store.js';
+import { APP_VERSION, GITHUB_URL } from '../../../shared/version.js';
 import { Chip } from './components.js';
 import { HubsDevicesTab } from './tabs/hubs.js';
 import { MappingTab } from './tabs/mapping.js';
@@ -61,23 +62,34 @@ export function App(): JSX.Element {
         <div class="brand">
           <span class="brand__logo" aria-hidden="true">◧</span>
           <span class="brand__name">Modbus Bridge</span>
+          <a
+            class={`version-badge ${updateAvailable.value ? 'version-badge--update' : ''}`}
+            href={`${GITHUB_URL}/releases`}
+            target="_blank"
+            rel="noreferrer"
+            title={updateAvailable.value ? t('Update verfügbar', 'Update available') : t('Auf GitHub ansehen', 'View on GitHub')}
+          >
+            v{snap?.appVersion ?? APP_VERSION}
+            {updateAvailable.value ? <span class="version-badge__dot" aria-hidden="true" /> : null}
+          </a>
         </div>
         <div class="shell__status">
           <Chip tone={readyTone}>{tServer(readiness)}</Chip>
           <Chip tone={connectHealth === 'connected' ? 'success' : 'muted'}>
             {t('Connect', 'Connect')}: {tServer(connectHealth)}
           </Chip>
-          <button
-            class="version-badge"
-            type="button"
-            onClick={() => (tab.value = 'updates')}
-            title={t('Zu den Updates', 'Go to updates')}
-          >
-            v{snap?.appVersion ?? '—'}
-          </button>
           <span class={`dot ${streamOnline.value ? 'dot--ok' : 'dot--off'}`} title={streamOnline.value ? 'live' : 'offline'} />
         </div>
       </header>
+
+      {updateAvailable.value ? (
+        <a class="update-banner" href={`${GITHUB_URL}/releases/latest`} target="_blank" rel="noreferrer">
+          {t(
+            `Neue Version verfügbar: v${latestVersion.value} (installiert: v${snap?.appVersion ?? APP_VERSION}). Jetzt auf GitHub ansehen →`,
+            `New version available: v${latestVersion.value} (installed: v${snap?.appVersion ?? APP_VERSION}). View it on GitHub →`,
+          )}
+        </a>
+      ) : null}
 
       <nav class="shell__nav" aria-label={t('Module', 'Modules')}>
         {TABS.map((x) => (
@@ -120,4 +132,6 @@ export async function boot(): Promise<void> {
   void catalog.value;
   effect(applyAmbient);
   setInterval(applyAmbient, 10 * 60 * 1000);
+  void checkForUpdate(APP_VERSION, GITHUB_URL);
+  setInterval(() => void checkForUpdate(APP_VERSION, GITHUB_URL), 6 * 60 * 60 * 1000);
 }

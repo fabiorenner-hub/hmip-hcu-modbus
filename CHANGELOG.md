@@ -4,6 +4,13 @@ All notable changes to the Modbus Bridge plugin are documented here. The version
 is the single source of truth in `package.json` and must stay in sync with the
 Dockerfile (ARG + LABEL), this file and the SPA version constant.
 
+## 1.0.4 — 2026-06-26
+
+- Clickable version badge next to the title that links to GitHub and shows an
+  update notice (badge dot + banner) when a newer release is available. The check
+  runs in the browser against the GitHub releases API, keeping the plugin local.
+- New plugin icon based on the Modbus logo.
+
 ## 1.0.3 — 2026-06-26
 
 - Full Dark-Glass visual layer per the design spec: glass-morphism surfaces

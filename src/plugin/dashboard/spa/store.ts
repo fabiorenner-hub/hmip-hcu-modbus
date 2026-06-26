@@ -14,6 +14,8 @@ export const config = signal<AppConfig | null>(null);
 export const catalog = signal<Catalog | null>(null);
 export const streamOnline = signal(false);
 export const loadError = signal<string | null>(null);
+export const latestVersion = signal<string | null>(null);
+export const updateAvailable = signal(false);
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -80,4 +82,47 @@ export function startStream(): void {
     };
   };
   connect();
+}
+
+function parseSemver(v: string): number[] {
+  return v.replace(/^v/i, '').split('.').map((n) => parseInt(n, 10) || 0);
+}
+
+/** True when `a` is a strictly newer semantic version than `b`. */
+function isNewer(a: string, b: string): boolean {
+  const pa = parseSemver(a);
+  const pb = parseSemver(b);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const da = pa[i] ?? 0;
+    const db = pb[i] ?? 0;
+    if (da !== db) return da > db;
+  }
+  return false;
+}
+
+/** Build the GitHub releases API URL from the repo web URL. */
+function githubLatestApi(repoUrl: string): string | null {
+  const m = repoUrl.match(/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/i);
+  if (!m) return null;
+  return `https://api.github.com/repos/${m[1]}/${m[2]}/releases/latest`;
+}
+
+/**
+ * Check GitHub for a newer release. Runs in the browser (keeps the plugin server
+ * local; the check is best-effort and never blocks the UI).
+ */
+export async function checkForUpdate(current: string, repoUrl: string): Promise<void> {
+  const url = githubLatestApi(repoUrl);
+  if (!url) return;
+  try {
+    const res = await fetch(url, { headers: { accept: 'application/vnd.github+json' } });
+    if (!res.ok) return;
+    const data = (await res.json()) as { tag_name?: string };
+    const tag = (data.tag_name ?? '').replace(/^v/i, '');
+    if (!tag) return;
+    latestVersion.value = tag;
+    updateAvailable.value = isNewer(tag, current);
+  } catch {
+    /* offline or rate-limited — ignore */
+  }
 }
