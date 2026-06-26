@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.kiro
+.tmp-assets
+data
+*.tar.gz
+*.log
+coverage
+.DS_Store
+Dockerfile
+.dockerignore

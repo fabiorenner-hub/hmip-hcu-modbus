@@ -1,0 +1,69 @@
+{
+  "name": "hmip-hcu-modbus",
+  "version": "1.0.3",
+  "private": false,
+  "type": "module",
+  "description": "Homematic IP HCU plugin that bridges Modbus TCP/UDP/RTU devices into the Homematic IP system.",
+  "license": "Apache-2.0",
+  "author": "Fabio Renner",
+  "homepage": "https://github.com/fabiorenner-hub/hmip-hcu-modbus#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fabiorenner-hub/hmip-hcu-modbus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fabiorenner-hub/hmip-hcu-modbus/issues"
+  },
+  "keywords": [
+    "homematic-ip",
+    "hmip",
+    "hcu",
+    "homematicip-hcu",
+    "connect-api",
+    "plugin",
+    "modbus",
+    "smart-home",
+    "iot",
+    "typescript"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build:server": "tsc -p tsconfig.json",
+    "build:spa": "tsc -p tsconfig.spa.json --noEmit && node scripts/build-spa.mjs",
+    "build": "npm run clean && npm run build:server && npm run build:spa && node scripts/make-icon.mjs && node scripts/copy-public.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spa.json --noEmit",
+    "lint": "eslint . --ext .ts,.tsx,.js --max-warnings=0",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "node --enable-source-maps --loader ts-node/esm src/plugin/index.ts",
+    "build:image": "node scripts/build-image.mjs",
+    "start": "node dist/plugin/index.js"
+  },
+  "dependencies": {
+    "fastify": "^4.28.1",
+    "modbus-serial": "^8.0.17",
+    "uuid": "^9.0.1",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@preact/signals": "^1.3.0",
+    "@types/node": "^20.14.10",
+    "@types/uuid": "^9.0.8",
+    "@types/ws": "^8.5.10",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "esbuild": "^0.23.0",
+    "eslint": "^8.57.0",
+    "fast-check": "^3.19.0",
+    "preact": "^10.22.1",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3",
+    "vitest": "^2.0.3"
+  }
+}
