@@ -1,6 +1,6 @@
 {
   "name": "hmip-hcu-modbus",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": false,
   "type": "module",
   "description": "Homematic IP HCU plugin that bridges Modbus TCP/UDP/RTU devices into the Homematic IP system.",

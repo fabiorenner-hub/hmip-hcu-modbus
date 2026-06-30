@@ -128,6 +128,12 @@ export const BindingSchema = z.object({
   scale: z.number().default(1),
   offset: z.number().default(0),
   precision: z.number().int().min(0).max(8).optional(),
+  /**
+   * SunSpec-style dynamic scale factor. When set, the effective scale becomes
+   * `scale * 10^SF`, where SF is read live as a signed 16-bit value from this
+   * register (same hub, unit and register class as the binding). Read-only path.
+   */
+  scaleFactorAddress: z.number().int().min(0).max(65535).optional(),
   /** Swap 16-bit word order for 32/64-bit values (CDAB vs ABCD). */
   wordSwap: z.boolean().default(false),
   /** Swap the two bytes within each 16-bit word (BADC). */

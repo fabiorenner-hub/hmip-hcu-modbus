@@ -4,6 +4,12 @@ All notable changes to the Modbus Bridge plugin are documented here. The version
 is the single source of truth in `package.json` and must stay in sync with the
 Dockerfile (ARG + LABEL), this file and the SPA version constant.
 
+## 1.0.5 — 2026-06-26
+
+- Dynamic scale factor support (SunSpec-style): a binding can reference a second
+  register as its scale factor, so the value becomes `raw × 10^SF` with SF read
+  live each poll. Covers e.g. inverter power/scale-factor register pairs.
+
 ## 1.0.4 — 2026-06-26
 
 - Clickable version badge next to the title that links to GitHub and shows an

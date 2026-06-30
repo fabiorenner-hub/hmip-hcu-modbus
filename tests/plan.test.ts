@@ -58,4 +58,14 @@ describe('planReads', () => {
     const b = plans[0]!.bindings.find((x) => x.binding.id === 'b')!;
     expect(b.offset).toBe(2);
   });
+
+  it('covers a SunSpec scale-factor register in the read block', () => {
+    const plans = planReads([binding({ id: 'p', address: 0, dataType: 'int16', scaleFactorAddress: 1 })]);
+    expect(plans).toHaveLength(1);
+    expect(plans[0]!.start).toBe(0);
+    // block must span both the value (addr 0) and the SF register (addr 1)
+    expect(plans[0]!.length).toBeGreaterThanOrEqual(2);
+    // but only the real binding is placed, not the SF anchor
+    expect(plans[0]!.bindings).toHaveLength(1);
+  });
 });

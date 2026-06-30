@@ -141,6 +141,7 @@ function BindingRow(props: { device: ModbusDevice; binding: Binding }): JSX.Elem
       <td><input class="w-num" type="number" step="any" value={b.scale} onInput={(e) => patch((x) => { x.scale = Number((e.target as HTMLInputElement).value); })} /></td>
       <td><input class="w-num" type="number" step="any" value={b.offset} onInput={(e) => patch((x) => { x.offset = Number((e.target as HTMLInputElement).value); })} /></td>
       <td><input class="w-num" type="number" value={b.precision ?? ''} onInput={(e) => patch((x) => setOpt(x, 'precision', (e.target as HTMLInputElement).value))} /></td>
+      <td><input class="w-num" type="number" value={b.scaleFactorAddress ?? ''} placeholder="–" onInput={(e) => patch((x) => setOpt(x, 'scaleFactorAddress', (e.target as HTMLInputElement).value))} /></td>
       <td class="center"><input type="checkbox" checked={b.wordSwap} onChange={(e) => patch((x) => { x.wordSwap = (e.target as HTMLInputElement).checked; })} /></td>
       <td class="center"><input type="checkbox" checked={b.byteSwap} onChange={(e) => patch((x) => { x.byteSwap = (e.target as HTMLInputElement).checked; })} /></td>
       <td>
@@ -237,7 +238,7 @@ function DeviceEditor(props: { device: ModbusDevice }): JSX.Element {
               <tr>
                 <th>{t('Feature', 'Feature')}</th><th>{t('Feld', 'Field')}</th><th>{t('Klasse', 'Class')}</th>
                 <th>{t('Adr.', 'Addr.')}</th><th>{t('Typ', 'Type')}</th><th>{t('Skala', 'Scale')}</th>
-                <th>{t('Offset', 'Offset')}</th><th>{t('Präz.', 'Prec.')}</th><th>WS</th><th>BS</th>
+                <th>{t('Offset', 'Offset')}</th><th>{t('Präz.', 'Prec.')}</th><th>{t('SF-Reg', 'SF reg')}</th><th>WS</th><th>BS</th>
                 <th>{t('Zugriff', 'Access')}</th><th>{t('Verify', 'Verify')}</th><th></th>
               </tr>
             </thead>

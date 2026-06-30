@@ -143,22 +143,47 @@ export class Poller {
       const readings: BindingReading[] = [];
       let hadError = false;
 
+      // Pass 1: execute all reads so scale-factor registers are available
+      // regardless of which block they fall into.
+      const blocks: { plan: (typeof plans)[number]; block: number[] | null; error: string | null }[] = [];
       for (const plan of plans) {
         let block: number[] | null = null;
-        let blockError: string | null = null;
+        let error: string | null = null;
         try {
           block = await this.hubs.read(device.hubId, device.unitId, plan.registerKind, plan.start, plan.length);
         } catch (err) {
-          blockError = String(err);
+          error = String(err);
           hadError = true;
         }
+        blocks.push({ plan, block, error });
+      }
+
+      // Look up a live signed-int16 scale factor from the read blocks.
+      const sfFor = (kind: string, address: number): number | undefined => {
+        for (const { plan, block } of blocks) {
+          if (!block || plan.registerKind !== kind) continue;
+          if (address >= plan.start && address < plan.start + plan.length) {
+            const w = block[address - plan.start];
+            if (w === undefined) continue;
+            return w > 0x7fff ? w - 0x10000 : w;
+          }
+        }
+        return undefined;
+      };
+
+      // Pass 2: decode each binding, applying the SF where configured.
+      for (const { plan, block, error: blockError } of blocks) {
         for (const pb of plan.bindings) {
           const slice = block ? block.slice(pb.offset, pb.offset + pb.count) : null;
           let value: DecodedValue = null;
           let error = blockError;
           if (slice) {
             try {
-              value = decodeBinding(pb.binding, slice);
+              const sf =
+                pb.binding.scaleFactorAddress !== undefined
+                  ? sfFor(plan.registerKind, pb.binding.scaleFactorAddress)
+                  : undefined;
+              value = decodeBinding(pb.binding, slice, sf);
             } catch (err) {
               error = String(err);
             }

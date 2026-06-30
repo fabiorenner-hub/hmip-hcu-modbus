@@ -27,20 +27,32 @@ export interface ReadPlan {
  * oversized read; spans separated by more than `maxGap` stay distinct.
  */
 export function planReads(bindings: Binding[], maxBlock = 120, maxGap = 8): ReadPlan[] {
-  const byKind = new Map<RegisterKind, Binding[]>();
+  // Spans tied to a binding plus "anchor" spans (e.g. SunSpec scale-factor
+  // registers) that must be covered by a read but have no binding of their own.
+  interface Span {
+    binding: Binding | null;
+    start: number;
+    count: number;
+  }
+  const byKind = new Map<RegisterKind, Span[]>();
+  const add = (kind: RegisterKind, span: Span): void => {
+    const list = byKind.get(kind) ?? [];
+    list.push(span);
+    byKind.set(kind, list);
+  };
   for (const b of bindings) {
-    const list = byKind.get(b.registerKind) ?? [];
-    list.push(b);
-    byKind.set(b.registerKind, list);
+    add(b.registerKind, { binding: b, start: b.address, count: bindingReadCount(b) });
+    // Ensure the dynamic scale-factor register is read too (registers only).
+    if (b.scaleFactorAddress !== undefined && (b.registerKind === 'holding' || b.registerKind === 'input')) {
+      add(b.registerKind, { binding: null, start: b.scaleFactorAddress, count: 1 });
+    }
   }
 
   const plans: ReadPlan[] = [];
   for (const [registerKind, list] of byKind) {
-    const spans = list
-      .map((binding) => ({ binding, start: binding.address, count: bindingReadCount(binding) }))
-      .sort((a, b) => a.start - b.start || a.count - b.count);
+    const spans = list.sort((a, b) => a.start - b.start || a.count - b.count);
 
-    let block: { start: number; end: number; items: typeof spans } | null = null;
+    let block: { start: number; end: number; items: Span[] } | null = null;
     const flush = () => {
       if (!block) return;
       const length = block.end - block.start;
@@ -48,11 +60,9 @@ export function planReads(bindings: Binding[], maxBlock = 120, maxGap = 8): Read
         registerKind,
         start: block.start,
         length,
-        bindings: block.items.map(({ binding, start, count }) => ({
-          binding,
-          offset: start - block!.start,
-          count,
-        })),
+        bindings: block.items
+          .filter((s): s is Span & { binding: Binding } => s.binding !== null)
+          .map(({ binding, start, count }) => ({ binding, offset: start - block!.start, count })),
       });
       block = null;
     };

@@ -25,8 +25,10 @@ export function bindingReadCount(binding: Binding): number {
 /**
  * Decode the raw register words read for a binding into a typed value.
  * `raw` is always an array of numbers; the adapter maps coil booleans to 0/1.
+ * `scaleFactor` is the live signed SF value (SunSpec) when the binding references
+ * a scale-factor register; the effective scale becomes `scale * 10^SF`.
  */
-export function decodeBinding(binding: Binding, raw: number[]): DecodedValue {
+export function decodeBinding(binding: Binding, raw: number[], scaleFactor?: number): DecodedValue {
   if (raw.length === 0) return null;
 
   if (binding.registerKind === 'coil' || binding.registerKind === 'discrete') {
@@ -47,7 +49,11 @@ export function decodeBinding(binding: Binding, raw: number[]): DecodedValue {
   }
 
   const rawNum = decodeNumeric(raw, binding.dataType, binding.wordSwap, binding.byteSwap);
-  return applyScale(rawNum, binding.scale, binding.offset, binding.precision);
+  let scale = binding.scale;
+  if (binding.scaleFactorAddress !== undefined && scaleFactor !== undefined) {
+    scale = binding.scale * Math.pow(10, scaleFactor);
+  }
+  return applyScale(rawNum, scale, binding.offset, binding.precision);
 }
 
 export type WriteOp =

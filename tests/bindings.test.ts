@@ -41,6 +41,17 @@ describe('decodeBinding', () => {
   it('extracts a bit', () => {
     expect(decodeBinding(binding({ dataType: 'bool', bitIndex: 2 }), [0b100])).toBe(true);
   });
+  it('applies a dynamic SunSpec scale factor (value × 10^SF)', () => {
+    const b = binding({ dataType: 'int16', scale: 1, scaleFactorAddress: 40084 });
+    expect(decodeBinding(b, [235], -1)).toBeCloseTo(23.5, 6);
+    expect(decodeBinding(b, [235], -2)).toBeCloseTo(2.35, 6);
+    expect(decodeBinding(b, [235], 0)).toBe(235);
+    expect(decodeBinding(b, [235], 1)).toBe(2350);
+  });
+  it('falls back to the static scale when no SF value is available', () => {
+    const b = binding({ dataType: 'int16', scale: 1, scaleFactorAddress: 40084 });
+    expect(decodeBinding(b, [235])).toBe(235);
+  });
 });
 
 describe('clampSafety', () => {
