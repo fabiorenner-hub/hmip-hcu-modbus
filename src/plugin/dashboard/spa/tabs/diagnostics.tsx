@@ -46,6 +46,22 @@ export function DiagnosticsTab(): JSX.Element {
         </Card>
       ) : null}
 
+      <Card title={t('Hub-Status', 'Hub status')}>
+        {!snap || snap.hubs.length === 0 ? (
+          <EmptyState message={t('Kein Hub', 'No hub')} />
+        ) : (
+          <div class="issue-list">
+            {snap.hubs.map((h) => (
+              <div key={h.id} class="issue-row">
+                <Chip tone={h.health === 'connected' ? 'success' : h.health === 'error' ? 'danger' : 'warn'}>{tServer(h.health)}</Chip>
+                <span class="mono">{h.name} · {h.target}</span>
+                {h.lastError ? <span class="hub-error">{h.lastError}</span> : null}
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
+
       <Card title={t('Konfigurationsprüfung', 'Configuration checks')}>
         {issues.value.length === 0 ? (
           <EmptyState message={t('Keine Hinweise', 'No issues')} />

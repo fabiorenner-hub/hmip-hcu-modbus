@@ -4,6 +4,15 @@ All notable changes to the Modbus Bridge plugin are documented here. The version
 is the single source of truth in `package.json` and must stay in sync with the
 Dockerfile (ARG + LABEL), this file and the SPA version constant.
 
+## 1.0.6 — 2026-07-02
+
+- Self-healing connections: repeated read/framing errors (e.g. "Data length
+  error, expected 7 got 8") now force a fresh reconnect so the Modbus framing
+  re-synchronises automatically — no more manual disable/enable of the hub.
+- Readable error messages: thrown Modbus errors are serialized properly instead
+  of showing "[object Object]", and the last hub error is surfaced in the Hubs
+  table and the Diagnostics tab.
+
 ## 1.0.5 — 2026-06-26
 
 - Dynamic scale factor support (SunSpec-style): a binding can reference a second

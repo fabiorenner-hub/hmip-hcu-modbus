@@ -2,7 +2,7 @@
  * Version constants mirrored from package.json. Keep APP_VERSION in sync with
  * package.json, Dockerfile (ARG + LABEL) and CHANGELOG.md on every build.
  */
-export const APP_VERSION = '1.0.5';
+export const APP_VERSION = '1.0.6';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,20 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.0.6',
+    date: '2026-07-02',
+    changes: [
+      {
+        de: 'Selbstheilung: Bei wiederholten Lese-/Framefehlern (z. B. „Data length error") wird die Verbindung automatisch neu aufgebaut – kein manuelles Aus/Ein mehr nötig.',
+        en: 'Self-healing: on repeated read/framing errors (e.g. "Data length error") the connection is rebuilt automatically — no more manual toggling.',
+      },
+      {
+        de: 'Lesbare Fehlermeldungen statt „[object Object]"; letzter Hub-Fehler wird jetzt im Dashboard angezeigt.',
+        en: 'Readable error messages instead of "[object Object]"; the last hub error is now shown in the dashboard.',
+      },
+    ],
+  },
   {
     version: '1.0.5',
     date: '2026-06-26',

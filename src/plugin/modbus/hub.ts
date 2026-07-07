@@ -8,6 +8,23 @@ import type { Logger } from '../logger.js';
 const ModbusRTU = ModbusNs.default;
 type ModbusClient = InstanceType<typeof ModbusRTU>;
 
+/** Turn any thrown value into a readable message (never "[object Object]"). */
+export function serializeModbusError(err: unknown): string {
+  if (err instanceof Error) return err.message || err.name;
+  if (typeof err === 'string') return err;
+  if (err && typeof err === 'object') {
+    const o = err as Record<string, unknown>;
+    if (typeof o.message === 'string' && o.message) return o.message;
+    if (o.modbusCode !== undefined) return `Modbus exception (code ${String(o.modbusCode)})`;
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return 'unknown error';
+    }
+  }
+  return String(err);
+}
+
 /** Serialises Modbus operations against a single hub (one socket per hub). */
 export class ModbusHub {
   private client: ModbusClient = new ModbusRTU();
@@ -20,6 +37,7 @@ export class ModbusHub {
   private reads = 0;
   private writes = 0;
   private errors = 0;
+  private consecutiveErrors = 0;
   /** Exponential reconnect backoff, 1s … 60s per Requirement 2. */
   private backoffMs = 1000;
   private nextAttemptAt = 0;
@@ -108,6 +126,7 @@ export class ModbusHub {
         this.lastError = null;
         this.backoffMs = 1000;
         this.nextAttemptAt = 0;
+        this.consecutiveErrors = 0;
         this.logger.info('modbus', `Hub ${this.config.name} connected (${this.target()}).`);
       } catch (err) {
         this.connected = false;
@@ -154,6 +173,8 @@ export class ModbusHub {
         this.reads += 1;
         this.lastOkAt = Date.now();
         this.health = 'connected';
+        this.consecutiveErrors = 0;
+        this.lastError = null;
         return data.slice(0, length);
       } catch (err) {
         this.fail(err);
@@ -169,6 +190,8 @@ export class ModbusHub {
         await this.client.writeCoil(address, value);
         this.writes += 1;
         this.lastOkAt = Date.now();
+        this.consecutiveErrors = 0;
+        this.lastError = null;
       } catch (err) {
         this.fail(err);
         throw err;
@@ -187,6 +210,8 @@ export class ModbusHub {
         }
         this.writes += 1;
         this.lastOkAt = Date.now();
+        this.consecutiveErrors = 0;
+        this.lastError = null;
       } catch (err) {
         this.fail(err);
         throw err;
@@ -204,11 +229,20 @@ export class ModbusHub {
 
   private fail(err: unknown): void {
     this.errors += 1;
-    this.lastError = String(err);
+    this.consecutiveErrors += 1;
+    const msg = serializeModbusError(err);
+    this.lastError = msg;
     this.health = 'error';
-    // A socket error usually means the connection is dead; force a reconnect.
-    if (/ECONN|ETIMEDOUT|EHOSTUNREACH|closed|Port Not Open|timed out/i.test(String(err))) {
+    // Self-heal: drop the socket on connection/framing errors (or after several
+    // consecutive failures) so the next operation reconnects with a fresh client
+    // and re-synchronises the Modbus framing. connect() builds a new client.
+    const fatal =
+      /ECONN|ETIMEDOUT|EHOSTUNREACH|EPIPE|ECONNRESET|closed|Port Not Open|timed out|data length|length error|crc|transaction|not open/i.test(
+        msg,
+      );
+    if (fatal || this.consecutiveErrors >= 5) {
       this.connected = false;
+      this.consecutiveErrors = 0;
     }
   }
 

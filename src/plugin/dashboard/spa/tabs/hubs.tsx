@@ -71,6 +71,7 @@ export function HubsDevicesTab(): JSX.Element {
                   <th>{t('Status', 'Status')}</th>
                   <th>{t('Lesen/Schreiben/Fehler', 'Reads/Writes/Errors')}</th>
                   <th>{t('Zuletzt OK', 'Last OK')}</th>
+                  <th>{t('Letzter Fehler', 'Last error')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -82,6 +83,7 @@ export function HubsDevicesTab(): JSX.Element {
                     <td><Chip tone={hubTone(h.health)}>{tServer(h.health)}</Chip></td>
                     <td class="mono">{h.reads}/{h.writes}/{h.errors}</td>
                     <td>{fmtTime(h.lastOkAt)}</td>
+                    <td class="hub-error">{h.lastError ? <span title={h.lastError}>{h.lastError}</span> : '–'}</td>
                   </tr>
                 ))}
               </tbody>

@@ -230,6 +230,8 @@ body[data-ambient='on'][data-phase='night'] {
 .device-row__values { color: var(--color-text); font-size: 13px; margin-top: var(--sp-1); font-variant-numeric: tabular-nums; }
 .device-row__meta { color: var(--color-faint); font-size: 11.5px; margin-top: var(--sp-1); }
 
+.hub-error { color: #fca5a5; font-size: 11.5px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 /* ---- Forms ---- */
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: var(--sp-3); }
 .field { display: flex; flex-direction: column; gap: var(--sp-1); }
