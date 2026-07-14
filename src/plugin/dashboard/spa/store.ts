@@ -17,6 +17,20 @@ export const loadError = signal<string | null>(null);
 export const latestVersion = signal<string | null>(null);
 export const updateAvailable = signal(false);
 
+export interface OtaStatusView {
+  coreVersion: string;
+  otaVersion: string;
+  otaActive: boolean;
+  channel: 'stable' | 'experimental';
+  mode: 'manual' | 'auto';
+  lastCheckAt: number | null;
+  latest: { version: string; notes?: string; requiresCore: boolean; canInstall: boolean; htmlUrl: string } | null;
+  installing: boolean;
+  lastError: string | null;
+}
+export const otaStatus = signal<OtaStatusView | null>(null);
+export const otaUnavailable = signal(false);
+
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -59,6 +73,35 @@ export const api = {
     if (!res.ok) throw new Error(`${res.status}`);
     return res.json();
   },
+};
+
+export const otaApi = {
+  async status(): Promise<void> {
+    try {
+      otaStatus.value = await getJson<OtaStatusView>('/api/ota/status');
+      otaUnavailable.value = false;
+    } catch {
+      otaStatus.value = null;
+      otaUnavailable.value = true;
+    }
+  },
+  async check(): Promise<void> {
+    try {
+      const res = await fetch('/api/ota/check', { method: 'POST' });
+      if (res.ok) otaStatus.value = (await res.json()) as OtaStatusView;
+    } catch {
+      /* ignore */
+    }
+  },
+  async install(): Promise<{ ok: boolean; reason?: string }> {
+    const res = await fetch('/api/ota/install', { method: 'POST' });
+    try {
+      return (await res.json()) as { ok: boolean; reason?: string };
+    } catch {
+      return { ok: res.ok };
+    }
+  },
+  analyticsPreview: () => getJson<Record<string, unknown>>('/api/analytics/preview'),
 };
 
 /** Subscribe to the SSE snapshot stream, with auto-reconnect. */

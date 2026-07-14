@@ -1,6 +1,6 @@
 {
   "name": "hmip-hcu-modbus",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": false,
   "type": "module",
   "description": "Homematic IP HCU plugin that bridges Modbus TCP/UDP/RTU devices into the Homematic IP system.",
@@ -31,17 +31,20 @@
   },
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
-    "build:server": "tsc -p tsconfig.json",
+    "build:bundle": "esbuild src/bootstrap/loader.ts src/plugin/index.ts --bundle --platform=node --format=esm --target=node20 --outdir=dist --banner:js=\"import{createRequire}from'node:module';const require=createRequire(import.meta.url);\"",
     "build:spa": "tsc -p tsconfig.spa.json --noEmit && node scripts/build-spa.mjs",
-    "build": "npm run clean && npm run build:server && npm run build:spa && node scripts/make-icon.mjs && node scripts/copy-public.mjs",
+    "build": "npm run clean && npm run build:bundle && npm run build:spa && node scripts/make-icon.mjs && node scripts/copy-public.mjs",
+    "build:ota": "node scripts/build-ota.mjs stable",
+    "build:ota:exp": "node scripts/build-ota.mjs experimental",
+    "publish:ota:exp": "pwsh -File scripts/publish-ota-experimental.ps1",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.spa.json --noEmit",
     "lint": "eslint . --ext .ts,.tsx,.js --max-warnings=0",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dev": "node --enable-source-maps --loader ts-node/esm src/plugin/index.ts",
+    "dev": "node --enable-source-maps --loader ts-node/esm src/bootstrap/loader.ts",
     "build:image": "node scripts/build-image.mjs",
-    "start": "node dist/plugin/index.js"
+    "start": "node dist/bootstrap/loader.js"
   },
   "dependencies": {
     "fastify": "^4.28.1",

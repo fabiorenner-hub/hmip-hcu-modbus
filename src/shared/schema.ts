@@ -204,6 +204,28 @@ export const DashboardSchema = z.object({
 });
 export type DashboardConfig = z.infer<typeof DashboardSchema>;
 
+/** OTA update settings (channel + auto/manual + check interval). */
+export const UpdatesConfigSchema = z
+  .object({
+    // OTA on by default, stable channel: fresh installs auto-track stable releases.
+    mode: z.enum(['manual', 'auto']).default('auto'),
+    channel: z.enum(['stable', 'experimental']).default('stable'),
+    checkIntervalHours: z.number().int().min(1).max(168).default(6),
+  })
+  .default({});
+export type UpdatesConfig = z.infer<typeof UpdatesConfigSchema>;
+
+/** Opt-in, anonymous usage analytics. Default OFF (family is LOCAL/no-telemetry). */
+export const AnalyticsConfigSchema = z
+  .object({
+    // On by default with a visible opt-out (Appearance & privacy tab).
+    enabled: z.boolean().default(true),
+    endpoint: z.string().url().default('https://hcu.fabiorenner.de/ingest.php'),
+    intervalHours: z.number().int().min(1).max(168).default(24),
+  })
+  .default({});
+export type AnalyticsConfig = z.infer<typeof AnalyticsConfigSchema>;
+
 export const AppConfigSchema = z.object({
   schemaVersion: z.number().int().default(1),
   hubs: z.array(HubSchema).default([]),
@@ -211,6 +233,8 @@ export const AppConfigSchema = z.object({
   appearance: AppearanceSchema.default({}),
   notifications: NotificationsSchema.default({}),
   dashboard: DashboardSchema.default({}),
+  updates: UpdatesConfigSchema,
+  analytics: AnalyticsConfigSchema,
 });
 export type AppConfig = z.infer<typeof AppConfigSchema>;
 

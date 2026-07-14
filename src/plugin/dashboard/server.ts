@@ -61,6 +61,18 @@ export function buildServer(orch: Orchestrator, logger: Logger, publicDir: strin
     github: GITHUB_URL,
   }));
 
+  // OTA update endpoints.
+  app.get('/api/ota/status', async () => orch.getOtaStatus());
+  app.post('/api/ota/check', async () => orch.otaCheck());
+  app.post('/api/ota/install', async (_req, reply) => {
+    const result = await orch.otaInstall();
+    if (!result.ok) reply.code(409);
+    return result;
+  });
+
+  // Analytics transparency: exactly what would be sent (opt-in only).
+  app.get('/api/analytics/preview', async () => orch.analyticsPreview());
+
   app.post('/api/sources/discover', async (req, reply) => {
     const body = (req.body ?? {}) as Partial<ScanRequest>;
     if (!body.hubId || body.start === undefined || body.count === undefined || !body.registerKind) {

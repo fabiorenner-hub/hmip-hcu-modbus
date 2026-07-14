@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { langPref, setLangPref, t } from '../i18n.js';
 import { config, api } from '../store.js';
 import { Panel, Card, Field, Segment, Toggle } from '../components.js';
+import { AnalyticsCard } from '../components/AnalyticsCard.js';
 import type { AppConfig } from '../../../../shared/schema.js';
 
 async function patch(fn: (c: AppConfig) => void): Promise<void> {
@@ -48,6 +49,8 @@ export function AppearanceTab(): JSX.Element {
           />
         </Field>
       </Card>
+
+      <AnalyticsCard />
     </Panel>
   );
 }

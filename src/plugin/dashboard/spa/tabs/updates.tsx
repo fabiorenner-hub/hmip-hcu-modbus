@@ -2,6 +2,7 @@ import type { JSX } from 'preact';
 import { snapshot, updateAvailable, latestVersion } from '../store.js';
 import { t, pick } from '../i18n.js';
 import { Panel, Card, Kpi, Chip } from '../components.js';
+import { OtaPanel } from '../components/OtaPanel.js';
 import { CHANGELOG, GITHUB_URL } from '../../../../shared/version.js';
 
 export function UpdatesTab(): JSX.Element {
@@ -58,6 +59,8 @@ export function UpdatesTab(): JSX.Element {
       <Card title="GitHub">
         <a class="btn" href={GITHUB_URL} target="_blank" rel="noreferrer">{t('Repository öffnen', 'Open repository')}</a>
       </Card>
+
+      <OtaPanel />
     </Panel>
   );
 }

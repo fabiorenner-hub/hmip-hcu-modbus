@@ -8,7 +8,7 @@ as Connect API features, and turns Homematic IP control commands into Modbus
 writes — so industrial and energy devices appear as regular Homematic IP devices.
 
 - **Plugin ID:** `de.fr.renner.plugin.modbusbridge`
-- **Scope:** `LOCAL` (no cloud, no telemetry)
+- **Scope:** `LOCAL` (no cloud dependency)
 - **HCU min. version:** `1.4.7`
 - **Architecture:** `arm64`
 - **Dashboard port:** `8091` (configurable)
@@ -51,8 +51,13 @@ writes — so industrial and energy devices appear as regular Homematic IP devic
 - **Dashboard** (`:8091`): add Modbus hubs, define devices and map registers to
   Homematic IP features; scan address ranges; view trends and diagnostics.
 
-All configuration is stored under `/data` and persists across updates and
-restarts. No data leaves your local network.
+All configuration is stored under `/data` and persists across updates and restarts.
+
+**Usage statistics:** the plugin sends anonymous, pseudonymous technical statistics
+(plugin/core versions, architecture, language) to help improve it. No room or
+device data, measured values, locations, names, IPs or personal data are sent.
+This is **on by default** and can be turned off any time under **Settings →
+Appearance & privacy**.
 
 ## Build from source
 

@@ -4,6 +4,17 @@ All notable changes to the Modbus Bridge plugin are documented here. The version
 is the single source of truth in `package.json` and must stay in sync with the
 Dockerfile (ARG + LABEL), this file and the SPA version constant.
 
+## 1.0.7 — 2026-07-14
+
+- OTA updater with two channels (`stable` + rolling `experimental`): a
+  node-builtins-only bootstrap loader chooses between the image bundle and a
+  verified OTA payload under `/data/ota/active`, with sha256 verification,
+  optional Ed25519, crash-loop quarantine and rollback to the image. Managed from
+  the Updates tab (channel/mode switch, check/install) with a progress indicator
+  and a robust restart flow.
+- Build migrated to an esbuild bundle (`dist/bootstrap/loader.js` +
+  `dist/plugin/index.js`); the container now runs the loader.
+
 ## 1.0.6 — 2026-07-02
 
 - Self-healing connections: repeated read/framing errors (e.g. "Data length

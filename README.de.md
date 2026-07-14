@@ -9,7 +9,7 @@ Schreibvorgänge um — so erscheinen Industrie- und Energiegeräte als regulär
 Homematic-IP-Geräte.
 
 - **Plugin-ID:** `de.fr.renner.plugin.modbusbridge`
-- **Scope:** `LOCAL` (keine Cloud, keine Telemetrie)
+- **Scope:** `LOCAL` (keine Cloud-Abhängigkeit)
 - **HCU-Mindestversion:** `1.4.7`
 - **Architektur:** `arm64`
 - **Dashboard-Port:** `8091` (konfigurierbar)
@@ -55,8 +55,13 @@ Homematic-IP-Geräte.
   Homematic-IP-Features abbilden; Adressbereiche scannen; Verläufe und Diagnose
   ansehen.
 
-Die gesamte Konfiguration wird unter `/data` gespeichert und übersteht Updates und
-Neustarts. Es verlassen keine Daten dein lokales Netz.
+Die gesamte Konfiguration wird unter `/data` gespeichert und übersteht Updates und Neustarts.
+
+**Nutzungsstatistik:** Das Plugin sendet anonyme, pseudonyme technische Statistik
+(Plugin-/Core-Versionen, Architektur, Sprache), um es zu verbessern. Es werden
+keine Raum- oder Gerätedaten, Messwerte, Orte, Namen, IPs oder personenbezogenen
+Daten übertragen. Das ist **standardmäßig aktiv** und lässt sich jederzeit unter
+**Einstellungen → Darstellung & Datenschutz** abschalten.
 
 ## Aus dem Quellcode bauen
 

@@ -16,6 +16,13 @@ import type { WriteOp } from '../engine/bindings.js';
 import { validateConfig, type ValidationResult } from '../engine/validate.js';
 import { numbersDiffer } from '../engine/decisions.js';
 import { Poller } from './poller.js';
+import { OtaManager, type OtaStatus } from '../ota/manager.js';
+import type { FetchLike } from '../ota/github.js';
+import { CallHome, type TelemetryPayload, type TelemetryMeta } from '../analytics/callHome.js';
+
+/** Node's global fetch, shaped for the OTA FetchLike / analytics interfaces. */
+const nodeFetch = ((i: string, o?: { headers?: Record<string, string> }) =>
+  globalThis.fetch(i, o as RequestInit)) as unknown as FetchLike;
 
 export interface ScanRequest {
   hubId: string;
@@ -53,6 +60,8 @@ export class Orchestrator {
   private decisions: DecisionEntry[] = [];
   private startedAt = Date.now();
   private dashboardApplier: ((enabled: boolean, port: number) => void) | null = null;
+  private readonly ota: OtaManager;
+  private readonly callHome: CallHome;
 
   constructor(
     private readonly env: Env,
@@ -76,17 +85,72 @@ export class Orchestrator {
         ),
       onRecover: (device) => this.logger.info('poll', `Device ${device.friendlyName} recovered.`),
     });
+
+    this.ota = new OtaManager({
+      dataDir: env.dataDir,
+      fetchImpl: nodeFetch,
+      getConfig: () => this.config.updates,
+      requestRestart: () => {
+        this.logger.info('ota', 'Restarting to apply update.');
+        setTimeout(() => process.exit(0), 500);
+      },
+      logger: (lvl, msg) => this.logger[lvl === 'error' ? 'error' : lvl === 'warn' ? 'warn' : 'info']('ota', msg),
+    });
+
+    this.callHome = new CallHome({
+      dataDir: env.dataDir,
+      getConfig: () => {
+        const a = this.config.analytics;
+        return { enabled: a.enabled, endpoint: a.endpoint, intervalHours: a.intervalHours };
+      },
+      buildMeta: () => this.buildTelemetryMeta(),
+      fetchImpl: (url, init) =>
+        (globalThis as { fetch: (a: string, b: unknown) => Promise<{ ok: boolean; status: number }> }).fetch(url, init),
+      logger: (lvl, msg) => this.logger[lvl]('analytics', msg),
+    });
+  }
+
+  /** Pseudonymous technical metadata only — no names/IPs/rooms/devices/values. */
+  private buildTelemetryMeta(): TelemetryMeta {
+    const status = this.ota.getStatus();
+    return {
+      coreVersion: status.coreVersion,
+      otaVersion: status.otaVersion,
+      buildId: this.env.buildId,
+      arch: process.arch,
+      lang: this.config.appearance.notifyLanguage,
+    };
   }
 
   start(): void {
     this.hubs.sync(this.config.hubs);
     this.hubs.start();
     this.poller.start();
+    this.ota.start();
+    this.callHome.start();
     if (!this.env.noConnect && this.env.authToken) {
       this.startConnect();
     } else {
       this.logger.warn('connect', 'Connect disabled (no token or NO_CONNECT set); running dashboard only.');
     }
+  }
+
+  // ---- OTA + analytics API (consumed by the dashboard server) --------------
+
+  getOtaStatus(): OtaStatus {
+    return this.ota.getStatus();
+  }
+
+  async otaCheck(): Promise<OtaStatus> {
+    return this.ota.check();
+  }
+
+  async otaInstall(): Promise<{ ok: boolean; reason?: string }> {
+    return this.ota.install();
+  }
+
+  analyticsPreview(): Promise<TelemetryPayload> {
+    return this.callHome.preview();
   }
 
   private startConnect(): void {
@@ -426,6 +490,8 @@ export class Orchestrator {
 
   async stop(): Promise<void> {
     this.poller.stop();
+    this.ota.stop();
+    this.callHome.stop();
     this.connect?.stop();
     await this.hubs.stop();
   }

@@ -2,7 +2,7 @@
  * Version constants mirrored from package.json. Keep APP_VERSION in sync with
  * package.json, Dockerfile (ARG + LABEL) and CHANGELOG.md on every build.
  */
-export const APP_VERSION = '1.0.6';
+export const APP_VERSION = '1.0.7';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,16 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.0.7',
+    date: '2026-07-14',
+    changes: [
+      {
+        de: 'OTA-Updater mit zwei Kanälen (stabil/experimentell): Direkt-Updates ohne HCUweb-Upload, Bootstrap-Loader mit Crash-Loop-Schutz und Rollback aufs Image. Fortschrittsanzeige beim Update.',
+        en: 'OTA updater with two channels (stable/experimental): direct updates without HCUweb upload, bootstrap loader with crash-loop protection and rollback to the image, plus a progress indicator during updates.',
+      },
+    ],
+  },
   {
     version: '1.0.6',
     date: '2026-07-02',

@@ -16,3 +16,5 @@ src/plugin/dashboard/public/app.js.map
 src/plugin/dashboard/public/icon.png
 scripts/icon.b64.txt
 release-notes.md
+*-ota-*.json
+ota-manifest*.json
