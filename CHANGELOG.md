@@ -4,6 +4,11 @@ All notable changes to the Modbus Bridge plugin are documented here. The version
 is the single source of truth in `package.json` and must stay in sync with the
 Dockerfile (ARG + LABEL), this file and the SPA version constant.
 
+## 1.0.9 — 2026-07-14
+
+- Renamed the dashboard title (top-left header, browser tab and boot splash) to
+  "HmIP Modbus Bridge".
+
 ## 1.0.8 — 2026-07-14
 
 - Internal stability and maintenance improvements to update handling (more robust

@@ -12,6 +12,12 @@ const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
 const channel = process.argv[2] === 'experimental' ? 'experimental' : 'stable';
 const name = pkg.name; // hmip-hcu-modbus
 const version = pkg.version; // X.Y.Z
+
+// Minimum core (image) version that can run an OTA payload. This is the first
+// release that shipped the bootstrap loader; the payload is a self-contained
+// bundle, so any loader-capable core can run it. It must stay <= the installed
+// core, otherwise OTA can never be applied on top of an older core.
+const OTA_MIN_CORE = '1.0.7';
 const repo = (pkg.repository?.url ?? '')
   .replace(/^git\+/, '')
   .replace(/\.git$/, '')
@@ -67,7 +73,7 @@ const sha256 = createHash('sha256').update(bundleBytes).digest('hex');
 
 const manifest = {
   version: otaVersion,
-  minCoreVersion: version,
+  minCoreVersion: OTA_MIN_CORE,
   sha256,
   assetUrl,
   bundleName,

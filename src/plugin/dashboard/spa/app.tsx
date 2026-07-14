@@ -61,7 +61,7 @@ export function App(): JSX.Element {
       <header class="shell__header">
         <div class="brand">
           <span class="brand__logo" aria-hidden="true">◧</span>
-          <span class="brand__name">Modbus Bridge</span>
+          <span class="brand__name">HmIP Modbus Bridge</span>
           <a
             class={`version-badge ${updateAvailable.value ? 'version-badge--update' : ''}`}
             href={`${GITHUB_URL}/releases`}
