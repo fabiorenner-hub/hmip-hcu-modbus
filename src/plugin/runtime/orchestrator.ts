@@ -19,6 +19,7 @@ import { Poller } from './poller.js';
 import { OtaManager, type OtaStatus } from '../ota/manager.js';
 import type { FetchLike } from '../ota/github.js';
 import { CallHome, type TelemetryPayload, type TelemetryMeta } from '../analytics/callHome.js';
+import { ANALYTICS_ENDPOINT } from '../pluginMeta.js';
 
 /** Node's global fetch, shaped for the OTA FetchLike / analytics interfaces. */
 const nodeFetch = ((i: string, o?: { headers?: Record<string, string> }) =>
@@ -101,7 +102,7 @@ export class Orchestrator {
       dataDir: env.dataDir,
       getConfig: () => {
         const a = this.config.analytics;
-        return { enabled: a.enabled, endpoint: a.endpoint, intervalHours: a.intervalHours };
+        return { enabled: a.enabled, endpoint: ANALYTICS_ENDPOINT, intervalHours: a.intervalHours };
       },
       buildMeta: () => this.buildTelemetryMeta(),
       fetchImpl: (url, init) =>

@@ -215,12 +215,12 @@ export const UpdatesConfigSchema = z
   .default({});
 export type UpdatesConfig = z.infer<typeof UpdatesConfigSchema>;
 
-/** Opt-in, anonymous usage analytics. Default OFF (family is LOCAL/no-telemetry). */
+/** Anonymous usage analytics. On by default with a visible opt-out. The
+ *  destination is fixed in code (see pluginMeta) — not user-configurable. */
 export const AnalyticsConfigSchema = z
   .object({
     // On by default with a visible opt-out (Appearance & privacy tab).
     enabled: z.boolean().default(true),
-    endpoint: z.string().url().default('https://hcu.fabiorenner.de/ingest.php'),
     intervalHours: z.number().int().min(1).max(168).default(24),
   })
   .default({});

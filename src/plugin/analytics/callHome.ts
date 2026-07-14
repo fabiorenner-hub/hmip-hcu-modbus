@@ -50,6 +50,7 @@ interface TelemetryState {
   lastTelemetrySuccess: number | null;
   lastTelemetryAttempt: number | null;
   lastTelemetryEvent: TelemetryEvent | null;
+  lastHeartbeatAt: number | null;
   lastVersion: string | null;
 }
 
@@ -85,10 +86,17 @@ export class CallHome {
         lastTelemetrySuccess: typeof o.lastTelemetrySuccess === 'number' ? o.lastTelemetrySuccess : null,
         lastTelemetryAttempt: typeof o.lastTelemetryAttempt === 'number' ? o.lastTelemetryAttempt : null,
         lastTelemetryEvent: (o.lastTelemetryEvent as TelemetryEvent) ?? null,
+        lastHeartbeatAt: typeof o.lastHeartbeatAt === 'number' ? o.lastHeartbeatAt : null,
         lastVersion: typeof o.lastVersion === 'string' ? o.lastVersion : null,
       };
     } catch {
-      return { lastTelemetrySuccess: null, lastTelemetryAttempt: null, lastTelemetryEvent: null, lastVersion: null };
+      return {
+        lastTelemetrySuccess: null,
+        lastTelemetryAttempt: null,
+        lastTelemetryEvent: null,
+        lastHeartbeatAt: null,
+        lastVersion: null,
+      };
     }
   }
 
@@ -138,11 +146,18 @@ export class CallHome {
       if (cfg.secret) headers['X-HPA-Ping-Secret'] = cfg.secret;
       const res = await this.fetchImpl(cfg.endpoint, { method: 'POST', headers, body, signal: controller.signal });
       if (res.status === 204 || res.ok) {
-        await this.writeState({ lastTelemetrySuccess: Date.now(), lastTelemetryEvent: event });
-      } else {
+        const patch: Partial<TelemetryState> = { lastTelemetrySuccess: Date.now(), lastTelemetryEvent: event };
+        if (event === 'heartbeat') patch.lastHeartbeatAt = Date.now();
+        await this.writeState(patch);
+      } else if (res.status >= 500) {
+        // Transient server error → retry later.
         this.scheduleRetry(event);
+      } else {
+        // 4xx (e.g. 400 invalid) → do not retry; the payload is likely rejected.
+        this.deps.logger?.('warn', `telemetry ${event} rejected (${res.status})`);
       }
     } catch {
+      // Network / timeout error → retry later.
       this.scheduleRetry(event);
     } finally {
       clearTimeout(abort);
@@ -173,8 +188,15 @@ export class CallHome {
 
     const h = Math.min(168, Math.max(1, this.deps.getConfig().intervalHours));
     this.timer = setInterval(() => {
-      void this.send('heartbeat').catch(() => undefined);
+      void this.maybeHeartbeat().catch(() => undefined);
     }, h * 3_600_000);
+  }
+
+  /** Send a heartbeat at most ~once per day, regardless of timer drift. */
+  private async maybeHeartbeat(): Promise<void> {
+    const st = await this.readState();
+    if (st.lastHeartbeatAt && Date.now() - st.lastHeartbeatAt < 20 * 3_600_000) return;
+    await this.send('heartbeat');
   }
 
   stop(): void {

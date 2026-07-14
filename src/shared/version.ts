@@ -2,7 +2,7 @@
  * Version constants mirrored from package.json. Keep APP_VERSION in sync with
  * package.json, Dockerfile (ARG + LABEL) and CHANGELOG.md on every build.
  */
-export const APP_VERSION = '1.0.7';
+export const APP_VERSION = '1.0.8';
 
 export interface ChangelogEntry {
   version: string;
@@ -11,6 +11,16 @@ export interface ChangelogEntry {
 }
 
 export const CHANGELOG: ChangelogEntry[] = [
+  {
+    version: '1.0.8',
+    date: '2026-07-14',
+    changes: [
+      {
+        de: 'Interne Stabilitäts- und Wartungsverbesserungen an der Update-Handhabung.',
+        en: 'Internal stability and maintenance improvements to update handling.',
+      },
+    ],
+  },
   {
     version: '1.0.7',
     date: '2026-07-14',

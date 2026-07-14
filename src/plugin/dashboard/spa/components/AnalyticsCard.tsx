@@ -33,28 +33,16 @@ export function AnalyticsCard(): JSX.Element | null {
     <Card title={t('Anonyme Nutzungsstatistik', 'Anonymous usage analytics')}>
       <p class="module-panel__hint">
         {t(
-          'Standardmäßig aktiv. Sendet in großen Abständen pseudonyme, technische Statistik (Versionen, Architektur, Sprache) – keine Raum-/Gerätedaten, Messwerte, Orte, Namen, IPs oder Tokens. Hier jederzeit abschaltbar.',
-          'On by default. Sends pseudonymous technical statistics (versions, architecture, language) at long intervals — no room/device data, values, locations, names, IPs or tokens. You can turn it off here anytime.',
-        )}
+          'Sendet ausschließlich pseudonyme technische Informationen wie Plugin-Version, HCU-Firmware, Architektur und Sprache. Es werden keine Geräte-, Raum-, Mess- oder Konfigurationsdaten übertragen. Standardmäßig aktiv, hier jederzeit abschaltbar.',
+          'Sends only pseudonymous technical information such as plugin version, HCU firmware, architecture and language. No device, room, measurement or configuration data is transmitted. On by default, can be turned off here anytime.',
+        )}{' '}
+        <a href="https://hcu.fabiorenner.de/privacy.php" target="_blank" rel="noreferrer">
+          {t('Datenschutz', 'Privacy')}
+        </a>
       </p>
 
       <Field label={t('Anonyme Nutzungsstatistik senden', 'Send anonymous usage analytics')}>
         <Toggle checked={a.enabled} onChange={(v) => void patchAnalytics((x) => { x.enabled = v; })} />
-      </Field>
-
-      <Field
-        label={t('Endpoint (HTTPS)', 'Endpoint (HTTPS)')}
-        hint={t('Leer = es wird nichts gesendet.', 'Empty = nothing is sent.')}
-      >
-        <input
-          type="url"
-          placeholder="https://…"
-          value={a.endpoint ?? ''}
-          onInput={(e) => void patchAnalytics((x) => {
-            const v = (e.target as HTMLInputElement).value.trim();
-            x.endpoint = v || 'https://hcu.fabiorenner.de/ingest.php';
-          })}
-        />
       </Field>
 
       <button
