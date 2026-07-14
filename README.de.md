@@ -57,11 +57,23 @@ Homematic-IP-Geräte.
 
 Die gesamte Konfiguration wird unter `/data` gespeichert und übersteht Updates und Neustarts.
 
-**Nutzungsstatistik:** Das Plugin sendet anonyme, pseudonyme technische Statistik
-(Plugin-/Core-Versionen, Architektur, Sprache), um es zu verbessern. Es werden
-keine Raum- oder Gerätedaten, Messwerte, Orte, Namen, IPs oder personenbezogenen
-Daten übertragen. Das ist **standardmäßig aktiv** und lässt sich jederzeit unter
-**Einstellungen → Darstellung & Datenschutz** abschalten.
+## Updates (over-the-air)
+
+Unter **Erweitert** lassen sich Update-Kanal und -Modus wählen:
+
+- **stable** (Standard) — geprüfte GitHub-Releases.
+- **experimental** — rollende Vorabversionen, over-the-air ausgeliefert ohne
+  neuen `.tar.gz`-/HCUweb-Upload. Für Tester.
+
+Modus **manuell** (Standard) prüft im Hintergrund und lässt dich bei Bedarf
+installieren; **auto** installiert neue Versionen im gewählten Kanal automatisch.
+
+Das Plugin startet über einen kleinen Bootstrap-Loader, der entweder das im Image
+enthaltene oder ein installiertes OTA-Payload ausführt, mit **Crash-Loop-Schutz**:
+Scheitert ein OTA-Payload dreimal beim Start, wird es unter Quarantäne gestellt
+und das Plugin fällt automatisch auf das Image zurück. Ein stabiles Core-Image hat
+immer Vorrang vor einem älteren OTA-Payload. Größere Upgrades, die einen neueren
+Core benötigen, werden weiterhin als `.tar.gz` über HCUweb ausgeliefert.
 
 ## Aus dem Quellcode bauen
 

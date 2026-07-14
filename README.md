@@ -53,11 +53,23 @@ writes — so industrial and energy devices appear as regular Homematic IP devic
 
 All configuration is stored under `/data` and persists across updates and restarts.
 
-**Usage statistics:** the plugin sends anonymous, pseudonymous technical statistics
-(plugin/core versions, architecture, language) to help improve it. No room or
-device data, measured values, locations, names, IPs or personal data are sent.
-This is **on by default** and can be turned off any time under **Settings →
-Appearance & privacy**.
+## Updates (over-the-air)
+
+Under **Advanced** you can pick an update channel and mode:
+
+- **stable** (default) — vetted GitHub releases.
+- **experimental** — rolling prereleases, delivered over-the-air without a new
+  `.tar.gz`/HCUweb upload. For testers.
+
+Mode **manual** (default) checks in the background and lets you install on demand;
+**auto** installs new versions on the selected channel automatically.
+
+The plugin boots through a small bootstrap loader that runs either the baked-in
+image or an installed OTA payload, with **crash-loop protection**: if an OTA
+payload fails to start three times it is quarantined and the plugin rolls back to
+the image automatically. A stable core image always wins over an older OTA
+payload. Major upgrades that need a newer core still ship as a `.tar.gz` via
+HCUweb.
 
 ## Build from source
 
